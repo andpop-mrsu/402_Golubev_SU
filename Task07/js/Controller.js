@@ -1,6 +1,8 @@
 import { winIn, size, name } from './Model.js';
 
-
+var db;
+var array_coord = [];
+var first;
 var coor_pc = [];
 var coor_pl = [];
 var kletki = [];
@@ -13,23 +15,22 @@ var cell = document.getElementsByClassName('cell');
 
 
 export function game(){
-    document.getElementById("area").style.width = 52 * parseInt(size);
+    document.getElementById("area").style.width = length_cell * parseInt(size);
     size1 = parseInt(size) * parseInt(size);
-    console.log(winIn);
 
     for(var i = 0; i <= (size1-1); i++){
         area.innerHTML += "<div class='cell' id=" + i + "></div>";
-        kletki[i] = i + 1;
+        cell_arr[i] = i + 1;
     }
 
 
     for(var i = 0; i<cell.length; i++){
-        cell[i].addEventListener('click', pl_hod, false);
+        cell[i].addEventListener('click', pl_move, false);
     }
 
     function del_list(){
         for(var i = 0; i<cell.length; i++){
-            cell[i].removeEventListener('click', pl_hod, false);
+            cell[i].removeEventListener('click', pl_move, false);
         }
     }
 
@@ -38,42 +39,72 @@ export function game(){
         if(pc === 1){
             pc_player = "x";
             player = "o";
-            pc_hod();
+            first = 1;
+            pc_move();
         } else{
             pc_player = "o";
             player = "x";
+            first = 0;
         }
     }
 
     who_one();
-
-    function pc_hod(){
-        while(true){
-            var rand = Math.floor(Math.random() * kletki.length);
-            if(kletki[rand] != 0) break
+	
+	function inputCoor(){
+        if(coor_pc.length > coor_pl.length){
+            coor_pl.push("-");
         }
-        var hod = parseInt(kletki[rand]) - 1;
-        document.getElementById(hod).innerHTML = pc_player;
-        coor_pc.push(hod);
-        kletki[rand] = 0;
+        if(coor_pc.length < coor_pl.length){
+            coor_pc.push("-");
+        }
+        if(first == 1){
+            for(var i = 0; i<=coor_pc.length - 1; i++){
+                var text = "Номер хода: " + (i+1) + " | координаты x = " + coor_pc[i] + " | координаты o = " + coor_pl[i];
+                array_coord.push(text);
+            }
+        } else{
+            for(var i = 0; i<=coor_pc.length - 1; i++){
+                var text = "Номер хода: " + (i+1) + " | координаты x = " + coor_pl[i] + " | координаты o = " + coor_pc[i];
+                array_coord.push(text);
+            }
+        }
+    }
+
+    function pc_move(){
+        while(true){
+            var rand = Math.floor(Math.random() * cell_arr.length);
+            if(cell_arr[rand] != 0) break
+        }
+        var move = parseInt(cell_arr[rand]) - 1;
+        document.getElementById(move).innerHTML = pc_player;
+        coor_pc.push(move);
+        cell_arr[rand] = 0;
+        let win;
         
         if(checkWin(coor_pc)){
-            document.getElementById("win").innerHTML = "Победа за компьтером!";
+            document.getElementById("win").innerHTML = "Победа за компьютером!";
             del_list();
+            win = "PC";
+            inputCoor();
+            writeGameInfo(pc_player, player);
         }else{
             var draw = true;
             for(var i in cell){
                 if(cell[i].innerHTML == '') draw = false;
             }
             if(draw){;
-                document.getElementById("win").innerHTML = "Ничья";
+                document.getElementById("win").innerHTML = "Ничья!";
                 del_list();
+                win = "PC";
+                inputCoor();
+                writeGameInfo(win, player);
             }
         }
     }
 
-    function pl_hod(){
+    function pl_move(){
         var data = [];
+        let win;
 
         if(!this.innerHTML){
             this.innerHTML = player;
@@ -85,24 +116,30 @@ export function game(){
         for(var i in cell){
             if(cell[i].innerHTML == player){
                 data.push(parseInt(cell[i].getAttribute('id')));
-                kletki[i] = 0;
+                cell_arr[i] = 0;
             }
         }
         if(checkWin(coor_pl)){
             document.getElementById("win").innerHTML = "Победа за " + name + "!";
             del_list();
+            win = name;
+            inputCoor();
+            writeGameInfo(player, player);
         }else{
             var draw = true;
             for(var i in cell){
                 if(cell[i].innerHTML == '') draw = false;
             }
             if(draw){
-                document.getElementById("win").innerHTML = "Ничья";
+                document.getElementById("win").innerHTML = "Ничья!";
                 del_list();
+                win = "Draw";
+                inputCoor();
+                writeGameInfo(win, player);
             }
         }
         if ((checkWin(coor_pl) == false) && (draw == false))
-            setTimeout(pc_hod, 100);
+            setTimeout(pc_move, 100);
     }
 
     function checkWin(data){
@@ -118,5 +155,22 @@ export function game(){
             if(win) return true;
         }
         return false;
+    }
+}
+
+export async function initializeDatabase() {
+    db = await idb.openDB('gamesDb', 1, { upgrade(db) {
+        db.createObjectStore('gamesInfo', {keyPath: 'gameId', autoIncrement: true});
+    },
+    });   
+}
+
+async function writeGameInfo(win, figure_people) {
+    let date = new Date().toLocaleString();
+    let size_board = size + "x" + size;
+    try {
+        await db.add('gamesInfo', {name, size_board, date, win, figure_people, array_coord});
+    } catch(err) {
+        throw err;
     }
 }
