@@ -1,0 +1,22 @@
+{
+    "name": "semyon/fraction",
+    "type": "project",
+    "authors": [
+        {
+            "name": "Semyon",
+            "email": "xuevbli@gmail.com"
+        }
+    ],
+    "description": "",
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        },
+        "files": [
+            "src/Test.php"
+        ]
+    },
+    "bin": [
+        "bin/run-test"
+    ]
+}
