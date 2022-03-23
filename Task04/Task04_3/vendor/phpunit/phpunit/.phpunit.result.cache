@@ -1,0 +1,1 @@
+{"version":1,"defects":[],"times":{"App\\Tests\\DBLoggerTest::testLog":0.053,"App\\Tests\\FileLoggerTest::testLog":0.001}}
