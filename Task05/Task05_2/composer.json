@@ -1,0 +1,19 @@
+{
+    "name": "semyon/task05_2",
+    "type": "project",
+    "authors": [
+        {
+            "name": "Semyon",
+            "email": "xuevbli@gmail.com"
+        }
+    ],
+    "description": "",
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    },
+    "require": {
+        "phpunit/phpunit": "^9.5"
+    }
+}
